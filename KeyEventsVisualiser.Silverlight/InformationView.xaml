@@ -1,0 +1,52 @@
+﻿<UserControl x:Class="KeyEventsVisualiser.Silverlight.InformationView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" Width="Auto" Height="Auto">
+    <Grid x:Name="LayoutRoot" Background="White" Width="Auto" Height="Auto" DataContext="{Binding}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="3*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Viewbox
+          Margin="4"
+          VerticalAlignment="Stretch"
+            HorizontalAlignment="Stretch"
+          Height="Auto"
+            Width="Auto"
+             Grid.Column="0" Grid.Row="0" Grid.RowSpan="2">
+            <TextBlock x:Name="MainMetricValue" Text="{Binding Path=MainMetricValue}" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource MainMetricValue}" DataContext="{Binding}" />
+        </Viewbox>
+        <Viewbox
+          Margin="4"
+          VerticalAlignment="Bottom"
+            HorizontalAlignment="Stretch"
+          Height="Auto"
+            Width="Auto"
+              Grid.Column="1" Grid.Row="0">
+            <TextBlock x:Name="MainMetricType" Text="{Binding Path=MainMetricType}" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource MainMetricType}" DataContext="{Binding}" />
+        </Viewbox>
+        <Grid Grid.Column="1" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <Viewbox
+          Margin="4"
+          VerticalAlignment="Top"
+            HorizontalAlignment="Stretch"
+            Width="Auto"
+              Grid.Column="1">
+                <TextBlock x:Name="ExtraMetricInfo" Text="{Binding Path=ExtraMetricInfo}" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource ExtraMetricInfo}" DataContext="{Binding}" />
+            </Viewbox>
+        </Grid>
+        
+    </Grid>
+</UserControl>
