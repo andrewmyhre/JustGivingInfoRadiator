@@ -7,7 +7,7 @@ using KeyEventsVisualiser.Silverlight.Models;
 
 namespace KeyEventsVisualiser.Silverlight.Services
 {
-    internal class LogService
+    internal class LogService : ILogService
     {
         public event EventHandler<LogArgs> LogDownloaded;
         public event EventHandler<UnhandledExceptionEventArgs> OnError;

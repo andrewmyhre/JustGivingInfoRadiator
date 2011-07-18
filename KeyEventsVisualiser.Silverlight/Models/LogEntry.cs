@@ -2,7 +2,7 @@
 
 namespace KeyEventsVisualiser.Silverlight.Models
 {
-    internal class LogEntry
+    public class LogEntry
     {
         public string Type { get; set; }
         public string[] Attributes { get; set; }

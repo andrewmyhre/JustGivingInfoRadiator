@@ -15,11 +15,23 @@ namespace KeyEventsVisualiser.Silverlight
 {
     public partial class MainPage : UserControl
     {
+        private readonly ILogService _logService = new LogService();
+        private TimeSpan _slideTimer = TimeSpan.FromSeconds(3);
         private bool _initialising = true;
         private int _currentSlide = 0;
         private Storyboard _slideChangeTimer;
         private Storyboard _dataUpdateTimer;
         private IEnumerable<LogEntry> _log;
+        private List<IEnumerable<LogEntry>> _logs=new List<IEnumerable<LogEntry>>();
+        private int _fetchingLogIndex=0;
+
+        private static string[] LogLocations =
+            {
+                "http://team1.justgiving.com/logs/v3-KeyEvents.csv",
+                "http://team1.justgiving.com/logs/v3-KeyEvents.csv",
+                "http://team1.justgiving.com/logs/v3-KeyEvents.csv",
+                "http://team1.justgiving.com/logs/v3-KeyEvents.csv",
+            };
 
         public MainPage()
         {
@@ -31,16 +43,19 @@ namespace KeyEventsVisualiser.Silverlight
         {
             System.Diagnostics.Debug.WriteLine("loaded.");
 
-            UpdateLogData();
+            UpdateLogData(0);
         }
 
-        private void UpdateLogData()
+        private void UpdateLogData(int logIndex)
         {
-            var logService = new LogService();
-            string logUrl = logService.GetLogUrl();
-            logService.LogDownloaded += new EventHandler<LogArgs>(logService_LogDownloaded);
-            logService.OnError += new EventHandler<UnhandledExceptionEventArgs>(logService_OnError);
-            logService.GetLogAsync(logUrl);
+            _fetchingLogIndex = logIndex;
+
+            System.Diagnostics.Debug.WriteLine(string.Format("fetch log {0}: {1}", _fetchingLogIndex, LogLocations[_fetchingLogIndex]));
+
+            string logUrl = LogLocations[_fetchingLogIndex];
+            _logService.LogDownloaded += new EventHandler<LogArgs>(logService_LogDownloaded);
+            _logService.OnError += new EventHandler<UnhandledExceptionEventArgs>(logService_OnError);
+            _logService.GetLogAsync(logUrl);
         }
 
         void DataDownloadedStartInterface()
@@ -48,10 +63,10 @@ namespace KeyEventsVisualiser.Silverlight
             AddSlideIndicators();
             ActivateSlide(0);
             BeginSlideSequence();
-            StartUpdateTimer();
+            CreateUpdateTimer();
         }
 
-        private void StartUpdateTimer()
+        private void CreateUpdateTimer()
         {
             _dataUpdateTimer = new Storyboard();
             DoubleAnimation anim = new DoubleAnimation();
@@ -63,14 +78,11 @@ namespace KeyEventsVisualiser.Silverlight
             Storyboard.SetTarget(anim, LayoutRoot);
             Storyboard.SetTargetProperty(anim, new PropertyPath(UIElement.OpacityProperty));
             LayoutRoot.Resources.Add("downloadTimer", _dataUpdateTimer);
-            _dataUpdateTimer.Begin();
-            System.Diagnostics.Debug.WriteLine("start download timer.");
         }
 
         void _dataUpdateTimer_Completed(object sender, EventArgs e)
         {
-            UpdateLogData();
-            _dataUpdateTimer.Begin();
+            UpdateLogData(0);
         }
 
         private void SetUpViewsAndViewModels(int slideCount)
@@ -162,7 +174,7 @@ namespace KeyEventsVisualiser.Silverlight
             DoubleAnimation anim = new DoubleAnimation();
             anim.From = 1;
             anim.To = 0.999d;
-            anim.Duration = new Duration(TimeSpan.FromSeconds(1));
+            anim.Duration = new Duration(_slideTimer);
             _slideChangeTimer.Children.Add(anim);
             _slideChangeTimer.Completed += new EventHandler(timer_Completed);
             Storyboard.SetTarget(anim, LayoutRoot);
@@ -223,10 +235,23 @@ namespace KeyEventsVisualiser.Silverlight
                 SetViewModelDataFromLog(_log);
 
                 DataDownloadedStartInterface();
+                DeactivateSlides();
+                ActivateSlide(0);
+
             } else
             {
-                _log = e.Log;
+                if (_fetchingLogIndex == 0)
+                    _log = new LogEntry[0];
+
+                _log = _log.Union(e.Log);
                 SetViewModelDataFromLog(_log);
+            }
+
+            if (_fetchingLogIndex < LogLocations.Length-1)
+                UpdateLogData(++_fetchingLogIndex);
+            else
+            {
+                _dataUpdateTimer.Begin();
             }
         }
 
